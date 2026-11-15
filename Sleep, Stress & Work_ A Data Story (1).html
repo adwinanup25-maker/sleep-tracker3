@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sleep, Stress & Work: A Data Story</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root{--bg:#f6f7fb;--card:#fff;--ink:#1c2033;--mute:#5d6481;--line:#e3e6f0;--acc:#5b5bd6;--acc2:#18a999;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1220;--card:#181c30;--ink:#eceefb;--mute:#9aa1c4;--line:#2a2f4a;--acc:#8c8cff;--acc2:#3fd4c2;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#0f1220;--card:#181c30;--ink:#eceefb;--mute:#9aa1c4;--line:#2a2f4a;--acc:#8c8cff;--acc2:#3fd4c2;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{background:linear-gradient(135deg,#2a2a72,#5b5bd6 60%,#18a999);color:#fff;padding:56px 20px 48px;text-align:center}
+header h1{margin:0 0 8px;font-size:clamp(1.8rem,5vw,3rem)}header p{max-width:700px;margin:0 auto;opacity:.92}
+main{max-width:1040px;margin:0 auto;padding:24px 16px 64px}
+section{margin-top:40px}h2{margin:0 0 8px;font-size:1.4rem}section>h2{padding-left:12px;border-left:4px solid var(--acc)}h3{margin:0 0 8px;font-size:1.02rem}
+.card{padding:22px}
+input[type=text],input[type=number]{height:44px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:18px}
+.grid{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(300px,1fr))}
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.kpi{text-align:center}.kpi b{display:block;font-size:1.7rem;color:var(--acc)}.kpi span{color:var(--mute);font-size:.82rem;display:block;line-height:1.3}
+.mute{color:var(--mute)}.src{color:var(--mute);font-size:.78rem;margin:8px 0 0}
+textarea,input[type=text],input[type=number]{width:100%;font:inherit;padding:10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+button{background:var(--acc);color:#fff;border:0;border-radius:10px;padding:10px 18px;font:inherit;cursor:pointer;margin-top:8px}
+.form{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));margin:12px 0}
+.form label{font-size:.85rem;font-weight:600;color:var(--mute);display:block;margin-bottom:4px}
+.sym{display:grid;gap:10px;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));grid-auto-rows:56px;margin:10px 0 4px}
+.sym label,.chk{display:flex;gap:10px;align-items:center;padding:0 14px;border:1px solid var(--line);border-radius:10px;cursor:pointer;font-size:.92rem;line-height:1.25;background:var(--bg)}
+.sym label{height:100%;margin:0;font-weight:400}
+.sym label:has(input:checked),.chk:has(input:checked){border-color:var(--acc);background:rgba(91,91,214,.12)}
+.sym input,.chk input{accent-color:var(--acc);width:18px;height:18px;flex:none}
+.chk{height:48px;max-width:340px}
+#result .card{margin-top:10px;background:var(--bg)}
+.cw{position:relative;height:300px}
+ul{padding-left:20px}a{color:var(--acc)}
+.legend{font-size:.8rem;color:var(--mute);margin:6px 0 0}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px}
+.tips{background:linear-gradient(135deg,rgba(91,91,214,.14),rgba(24,169,153,.14));border:2px solid var(--acc)}
+.tipgrid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));margin-top:14px}
+.tip{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px}
+.tip .e{font-size:2rem;display:block;line-height:1.2;margin-bottom:6px}
+.tip b{display:block;margin-bottom:4px}
+select{width:100%;height:44px;font:inherit;padding:0 10px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--ink)}
+</style>
+</head>
+<body>
+<header>
+<h1>😴 Sleep, Stress &amp; Work</h1>
+<p>How does the way we work connect to how we sleep and how stressed we feel? Real survey data from the CDC, the American Psychological Association and Gallup, compared with your own numbers.</p>
+<p style="margin-top:16px"><a href="#tips" style="color:#fff;font-weight:600;background:rgba(255,255,255,.18);padding:8px 16px;border-radius:999px;text-decoration:none">Jump to ways to sleep better ↓</a></p>
+</header>
+<main>
+
+<section class="card">
+<h2>1. Enter your details</h2>
+<p class="mute">Your answers stay in your browser. Results compare you with published averages for groups of people, not predictions for you.</p>
+<div class="form">
+<div><label for="u_occ">Your occupation (type it in)</label><input type="text" id="u_occ" list="occl" placeholder="e.g. Teacher" autocomplete="off"><datalist id="occl"></datalist></div>
+<div><label for="u_grp">Job category (optional)</label><select id="u_grp"><option value="">Auto-detect from my occupation</option></select></div>
+<div><label for="u_age">Your age</label><input type="number" id="u_age" min="10" max="100" value="30"></div>
+<div><label for="u_dur">Hours of sleep per night</label><input type="number" id="u_dur" min="0" max="14" step="0.1" value="7"></div>
+<div><label for="u_s">Your stress level (1–10)</label><input type="number" id="u_s" min="1" max="10" value="5"></div>
+</div>
+<label class="chk" style="max-width:340px"><input type="checkbox" id="u_night">I usually work night shifts</label>
+<p style="margin:14px 0 4px"><b>Symptoms (tick all that apply)</b></p>
+<div class="sym" id="sym"></div>
+<button id="go">Compare me</button>
+<div id="result"></div>
+</section>
+
+<section class="card tips" id="tips">
+<h2>2. How to make your sleep better</h2>
+<p class="mute">Eight habits sleep experts commonly recommend. After you click “Compare me,” you’ll also get tips picked for you in the results above.</p>
+<div class="tipgrid">
+<div class="tip"><span class="e">🕓</span><b>Keep a steady schedule</b>Same bedtime and wake time every day, including weekends.</div>
+<div class="tip"><span class="e">🌅</span><b>Get daylight and move</b>Morning light and daytime activity help you fall asleep later. Avoid hard workouts right before bed.</div>
+<div class="tip"><span class="e">☕</span><b>Watch caffeine and alcohol</b>Skip caffeine in the afternoon and evening. Alcohol can break up sleep later in the night.</div>
+<div class="tip"><span class="e">🧘</span><b>Wind down and manage stress</b>Try 30 minutes of reading, stretching or slow breathing, or jot tomorrow’s to-dos so your mind can rest.</div>
+<div class="tip"><span class="e">📱</span><b>Put screens away</b>Turn off phones and TVs about an hour before bed.</div>
+<div class="tip"><span class="e">🛏</span><b>Make the bedroom sleep-friendly</b>Dark, quiet and cool. Use the bed for sleep only.</div>
+<div class="tip"><span class="e">🌙</span><b>Work nights?</b>Keep your sleep time as regular as you can, use blackout curtains, and limit caffeine late in your shift.</div>
+<div class="tip"><span class="e">⏰</span><b>Don’t lie awake stressing</b>If you can’t sleep after about 20 minutes, get up, do something calm in dim light, and return when sleepy.</div>
+</div>
+<p style="margin:16px 0 0"><b>When to get help:</b> loud snoring, gasping or breathing pauses in sleep, or trouble sleeping for more than a few weeks that affects your day are worth discussing with a doctor.</p>
+</section>
+
+<section>
+<h2>3. You vs. other occupations</h2>
+<p class="mute">Share of workers who sleep under 7 hours a night, from the CDC’s survey of about 180,000 US workers. Your matched group lights up after you click “Compare me”.</p>
+<div class="grid">
+<div class="card" style="grid-column:1/-1"><h3>Short sleep (&lt;7 h) by occupation group</h3><div class="cw" style="height:720px"><canvas id="c1"></canvas></div><p class="legend"><i style="background:#f2a33a"></i>your group<i style="background:#18a999"></i>all employed adults<i style="background:#5b5bd6"></i>other groups</p><p class="src">Source: CDC MMWR 2017, BRFSS 2013–2014, 29 states. Values adjusted for age, sex, race/ethnicity, marital status and education.</p></div>
+<div class="card" style="grid-column:1/-1"><h3>Detailed jobs: the highest and lowest short-sleep rates</h3><div class="cw" style="height:640px"><canvas id="c2"></canvas></div><p class="src">Source: CDC MMWR 2017 (selected detailed groups, adjusted %).</p></div>
+</div></section>
+
+<section>
+<h2>4. You vs. people your age, and stress vs. sleep</h2>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(min(460px,100%),1fr))">
+<div class="card"><h3>Short sleep by age group</h3><div class="cw" style="height:400px"><canvas id="c3"></canvas></div><p class="src">Source: CDC MMWR 2017, employed adults, % sleeping under 7 h.</p></div>
+<div class="card"><h3>Average hours of sleep by stress level</h3><div class="cw" style="height:400px"><canvas id="c4"></canvas></div><p class="src">Source: APA Stress in America 2013, adults. Your bar uses the hours you entered.</p></div>
+<div class="card"><h3>Average stress (1–10) by hours slept</h3><div class="cw" style="height:400px"><canvas id="c5"></canvas></div><p class="src">Source: APA Stress in America 2013. “Sleep &lt;8 h” vs. “8 h or more”.</p></div>
+<div class="card"><h3>Effects of too little sleep: high vs. low stress</h3><div class="cw" style="height:400px"><canvas id="s3"></canvas></div><p class="src">Source: APA Stress in America 2013. % of adults who say they feel each effect.</p></div>
+</div></section>
+
+<section>
+<h2>5. The bigger picture</h2>
+<div class="card kpis">
+<div class="kpi"><b>36.5%</b><span>of US workers sleep under 7 h (CDC, 2013–14)</span></div>
+<div class="kpi"><b>58.2%</b><span>highest detailed job group: communications equipment operators</span></div>
+<div class="kpi"><b>21.4%</b><span>lowest: air transportation workers</span></div>
+<div class="kpi"><b>44.0%</b><span>of night-shift workers sleep ≤6 h vs. 28.8% on days (CDC, 2010)</span></div>
+<div class="kpi"><b>57%</b><span>of US adults say they’d feel better with more sleep (Gallup, 2023)</span></div>
+<div class="kpi"><b>49%</b><span>of US adults frequently feel stress (Gallup, 2023)</span></div>
+<div class="kpi"><b>77%</b><span>of US workers report work stress in the past month (APA, 2023)</span></div>
+</div>
+<div class="grid" style="margin-top:16px">
+<div class="card"><h3>Shift work and short sleep (≤6 h)</h3><div class="cw"><canvas id="s1"></canvas></div><p class="src">Source: CDC MMWR 2012, National Health Interview Survey 2010. Different cut-off (≤6 h) than the other CDC charts.</p></div>
+<div class="card"><h3>Short sleep by education</h3><div class="cw"><canvas id="s2"></canvas></div><p class="src">Source: CDC MMWR 2017, % sleeping under 7 h.</p></div>
+<div class="card"><h3>Who says they get the sleep they need</h3><div class="cw"><canvas id="s4"></canvas></div><p class="src">Source: Gallup poll, Dec 2023, % of US adults.</p></div>
+<div class="card"><h3>Frequent stress, by sleep and gender</h3><div class="cw"><canvas id="s5"></canvas></div><p class="src">Source: Gallup poll, Dec 2023. “Want more sleep” vs. “get what they need”.</p></div>
+<div class="card"><h3>Work fatigue by type of job</h3><div class="cw"><canvas id="s6"></canvas></div><p class="src">Source: APA 2021 Work and Well-being Survey. % feeling it quite often or more in the past 30 days.</p></div>
+<div class="card"><h3>Toxic workplace by job level</h3><div class="cw"><canvas id="s7"></canvas></div><p class="src">Source: APA 2023 Work in America Survey. % reporting a toxic workplace.</p></div>
+</div></section>
+
+<section class="card"><h2>6. What the data suggests</h2>
+<ul>
+<li><b>Job type matters.</b> Short sleep ranged from about 31% (education, farming) to nearly 43% (production work) across major groups. Jobs with more shift work tend to rank high.</li>
+<li><b>Night shifts stand out.</b> Night-shift workers were far more likely to sleep 6 hours or less, especially in transportation (69.7%) and health care (52.3%).</li>
+<li><b>Stress and sleep move together.</b> Adults with high stress averaged 6.2 h of sleep vs. 7.1 h for low-stress adults, and Gallup found 63% of people who want more sleep feel frequent stress vs. 31% of those who get enough.</li>
+<li><b>Age and education.</b> Short sleep was lower for people 65 and older, and lower for college graduates than for people with some college.</li>
+</ul></section>
+
+<section class="card"><h2>7. Patterns vs. proof</h2>
+<ul>
+<li><b>Correlation is not causation.</b> Stress and short sleep go together, but these surveys can’t show which causes which. APA notes the link likely runs both ways.</li>
+<li><b>Groups, not individuals.</b> A group average says little about any one person in that job.</li>
+<li><b>Self-reported and dated.</b> Most figures are self-reported. The CDC job data is from 2013–2014 in 29 states, so it may not reflect today or the whole country.</li>
+<li><b>Different measures.</b> Sources use different cut-offs (under 7 h, 6 h or less, 8 h) and different years, so compare within a chart, not across charts.</li>
+<li><b>Hidden factors.</b> Shift work, hours, age and income overlap with occupation.</li>
+</ul></section>
+
+<section class="card"><h2>Sources</h2>
+<ul style="font-size:.9rem">
+<li>CDC, Shockey &amp; Wheaton, “Short Sleep Duration by Occupation Group — 29 States, 2013–2014,” MMWR 2017. <a href="https://www.cdc.gov/mmwr/volumes/66/wr/mm6608a2.htm" target="_blank" rel="noopener">cdc.gov</a></li>
+<li>CDC, Luckhaupt, “Short Sleep Duration Among Workers — United States, 2010,” MMWR 2012. <a href="https://stacks.cdc.gov/view/cdc/183291" target="_blank" rel="noopener">stacks.cdc.gov</a></li>
+<li>American Psychological Association, Stress in America 2013: Stress and Sleep. <a href="https://www.apa.org/news/press/releases/stress/2013/sleep" target="_blank" rel="noopener">apa.org</a></li>
+<li>Gallup, “Americans Sleeping Less, More Stressed,” 2024 (Dec 2023 poll). <a href="https://news.gallup.com/poll/642704/americans-sleeping-less-stressed.aspx" target="_blank" rel="noopener">gallup.com</a></li>
+<li>APA, 2023 Work in America Survey. <a href="https://www.apa.org/pubs/reports/work-in-America/2023-workplace-health-well-being" target="_blank" rel="noopener">apa.org</a></li>
+<li>APA, 2021 Work and Well-being Survey (figures as reported by Lab Manager). <a href="https://www.labmanager.com/many-american-workers-plan-to-change-jobs-in-coming-year-26813" target="_blank" rel="noopener">labmanager.com</a></li>
+</ul></section>
+</main>
+
+<script>
+const $=id=>document.getElementById(id),CH={};
+const A='#5b5bd6',B='#18a999',O='#f2a33a',R='#e0645c',P='#c98bdb';
+function bar(id,o){
+  if(CH[id])CH[id].destroy();
+  const c=getComputedStyle(document.documentElement),m=c.getPropertyValue('--mute').trim(),ln=c.getPropertyValue('--line').trim(),u=o.u||'%';
+  const val={ticks:{color:m},grid:{color:ln},beginAtZero:true,max:o.max,title:{display:!!o.t,text:o.t,color:m}};
+  const cat={ticks:{color:m,autoSkip:false},grid:{display:false}};
+  CH[id]=new Chart($(id),{type:'bar',data:{labels:o.l,datasets:o.d.map(d=>({label:d.n,data:d.v,backgroundColor:d.c,borderRadius:4}))},
+  options:{indexAxis:o.h?'y':'x',responsive:true,maintainAspectRatio:false,scales:{x:o.h?val:cat,y:o.h?cat:val},
+  plugins:{legend:{display:o.d.length>1,labels:{color:m}},tooltip:{callbacks:{label:x=>(x.dataset.label?x.dataset.label+': ':'')+x.parsed[o.h?'x':'y']+u}}}}})}
+
+/* CDC MMWR 2017 (BRFSS 2013-14): adjusted % short sleep (<7 h), 22 major groups */
+const OG=[["Production",42.9],["Healthcare Support",40.1],["Healthcare Practitioners & Technical",40.0],["Food Preparation & Serving",39.8],["Protective Service",39.2],["Transportation & Material Moving",39.1],["Personal Care & Service",37.5],["Installation, Maintenance & Repair",36.6],["Office & Administrative Support",36.5],["Business & Financial Operations",36.1],["Building & Grounds Cleaning",36.0],["Arts, Design, Entertainment & Media",35.5],["Management",35.4],["Legal",34.5],["Construction & Extraction",34.5],["Sales & Related",34.4],["Architecture & Engineering",34.3],["Computer & Mathematical",33.8],["Life, Physical & Social Science",33.6],["Community & Social Services",32.2],["Education, Training & Library",31.3],["Farming, Fishing & Forestry",31.3]];
+const OD=[["Communications equipment operators",58.2],["Other transportation workers",54.0],["Rail transportation workers",52.7],["Printing workers",50.9],["Plant & system operators",49.6],["Firefighters",45.8],["Nursing, psychiatric & home health aides",43.3],["Cooks & food prep workers",41.4],["Law enforcement officers",39.8],["Health diagnosing & treating practitioners",39.7],["Motor vehicle operators",38.5],["Retail sales workers",34.4],["Computer specialists",33.6],["Lawyers & judges",32.9],["School teachers (primary/secondary)",32.5],["Engineers",32.2],["Life scientists",26.8],["Postsecondary teachers",25.4],["Religious workers",22.4],["Air transportation workers (pilots etc.)",21.4]];
+const ALL=36.5;
+/* keyword -> [detailed group or null, major group] */
+const MAP=[[/nursing assist|nurse aide|\bcna\b|home health|\baide\b/,OD[6][0],"Healthcare Support"],[/nurse|doctor|physician|dentist|surgeon|pharmac|paramedic|clinician|medical/,OD[9][0],"Healthcare Practitioners & Technical"],[/firefight/,OD[5][0],"Protective Service"],[/police|sheriff|deputy|law enforcement|officer/,OD[8][0],"Protective Service"],[/security|guard/,null,"Protective Service"],[/pilot|flight|aviat/,OD[19][0],"Transportation & Material Moving"],[/rail|train|conductor/,OD[2][0],"Transportation & Material Moving"],[/driver|truck|bus|deliver|uber|taxi/,OD[10][0],"Transportation & Material Moving"],[/warehouse|forklift|mover/,null,"Transportation & Material Moving"],[/professor|lecturer|faculty/,OD[17][0],"Education, Training & Library"],[/teacher|educator|tutor|instructor|school/,OD[14][0],"Education, Training & Library"],[/librar/,null,"Education, Training & Library"],[/software|developer|programmer|coder|\bit\b|data|computer|web/,OD[12][0],"Computer & Mathematical"],[/engineer/,OD[15][0],"Architecture & Engineering"],[/architect|drafter/,null,"Architecture & Engineering"],[/lawyer|attorney|judge|paralegal/,OD[13][0],"Legal"],[/accountant|finance|financial|analyst|bank|auditor|business/,null,"Business & Financial Operations"],[/manager|executive|ceo|director|owner|supervisor/,null,"Management"],[/cashier|retail|sales|store|shop/,OD[11][0],"Sales & Related"],[/cook|chef|kitchen|baker/,OD[7][0],"Food Preparation & Serving"],[/waiter|waitress|server|barista|bartend|restaurant|food/,null,"Food Preparation & Serving"],[/clerk|secretary|administrat|receptionist|assistant|office|dispatch/,null,"Office & Administrative Support"],[/biolog|life scientist/,OD[16][0],"Life, Physical & Social Science"],[/scientist|researcher|chemist|physicist|psycholog/,null,"Life, Physical & Social Science"],[/social worker|counselor|case worker|nonprofit/,null,"Community & Social Services"],[/clergy|pastor|priest|minister|imam|rabbi|chaplain/,OD[18][0],"Community & Social Services"],[/janitor|cleaner|custodian|housekeep|landscap|ground/,null,"Building & Grounds Cleaning"],[/farm|agricult|fish|forest|logging/,null,"Farming, Fishing & Forestry"],[/factory|assembl|production|machin|manufactur|welder|operator/,null,"Production"],[/mechanic|technician|repair|install/,null,"Installation, Maintenance & Repair"],[/construct|electrician|plumber|carpenter|builder|roof/,null,"Construction & Extraction"],[/hair|stylist|barber|beaut|childcare|daycare|nanny|fitness|trainer/,null,"Personal Care & Service"],[/artist|designer|writer|journalist|media|musician|actor|photograph|editor/,null,"Arts, Design, Entertainment & Media"]];
+$('occl').innerHTML=['Nurse','Doctor','Teacher','Professor','Software developer','Engineer','Lawyer','Accountant','Manager','Sales associate','Cashier','Chef','Server','Firefighter','Police officer','Truck driver','Pilot','Electrician','Mechanic','Janitor','Farmer','Social worker','Scientist','Designer','Administrative assistant','Factory worker','Hairstylist'].map(x=>`<option value="${x}">`).join('');
+function match(t){
+  t=t.toLowerCase();
+  for(const [re,det,grp] of MAP)if(re.test(t))return{det,grp};
+  const w=t.split(/\W+/).filter(x=>x.length>3);
+  for(const [g] of OG)if(w.some(x=>g.toLowerCase().includes(x)))return{det:null,grp:g};
+  return null}
+$('u_grp').innerHTML+=OG.map(x=>`<option>${x[0]}</option>`).join('');
+MAP.unshift([/dental hygien|veterinar|\bvet\b|therap|optomet|radiolog|lab tech|midwife|chiropract|audiolog|sonograph/,OD[9][0],"Healthcare Practitioners & Technical"],[/real estate|realtor|insurance agent|broker|telemarket/,null,"Sales & Related"],[/call center|customer service|teller|postal|mail carrier|data entry|bookkeep|front desk/,null,"Office & Administrative Support"],[/actuar|statistic|mathematic/,null,"Computer & Mathematical"],[/consultant|marketing|human resources|\bhr\b|recruiter|project|\btax\b|payroll|economist/,null,"Business & Financial Operations"],[/ship captain|ferry|sailor|mariner|courier/,null,"Transportation & Material Moving"],[/tailor|seamstress|textile|butcher|printer|printing/,null,"Production"],[/flight attendant|massage|cosmetolog|esthetic|\bnail\b|funeral|\bpet\b|groomer/,null,"Personal Care & Service"],[/coach|athlete|lifeguard|animator|film|video|\bdj\b|singer|dancer|translator|interpreter|publish/,null,"Arts, Design, Entertainment & Media"],[/surveyor|cartograph|urban planner/,null,"Architecture & Engineering"],[/handyman|mason|hvac|solar/,null,"Construction & Extraction"]);
+const SYM=[['ins','Trouble falling asleep'],['ins','Waking up during the night'],['ins','Waking up too early and can’t go back to sleep'],['apn','Loud snoring'],['apn','Gasping or pauses in breathing while asleep'],['apn','Morning headaches'],['gen','Daytime sleepiness'],['gen','Trouble concentrating'],['gen','Irritability or mood changes'],['gen','Waking up unrefreshed'],['gen','Relying on caffeine to get through the day'],['gen','Restless or uncomfortable legs at night']];
+$('sym').innerHTML=SYM.map((s,i)=>`<label><input type="checkbox" data-g="${s[0]}" value="${i}">${s[1]}</label>`).join('');
+const AGES=[['18–34',37.7],['35–44',37.6],['45–54',37.4],['55–64',33.8],['65+',29.2]];
+const ageIdx=a=>a<18?-1:a<35?0:a<45?1:a<55?2:a<65?3:4;
+
+function personal(U){
+  const g=U&&U.m?U.m.grp:null,d=U&&U.m?U.m.det:null;
+  bar('c1',{h:1,l:['All employed adults'].concat(OG.map(x=>x[0])),d:[{v:[ALL].concat(OG.map(x=>x[1])),c:['All employed adults'].concat(OG.map(x=>x[0])).map((l,i)=>i==0?B:l==g?O:A)}],t:'% sleeping under 7 hours',max:50});
+  bar('c2',{h:1,l:OD.map(x=>x[0]),d:[{v:OD.map(x=>x[1]),c:OD.map(x=>x[0]==d?O:A)}],t:'% sleeping under 7 hours',max:65});
+  const ai=U?ageIdx(U.age):-1;
+  bar('c3',{l:AGES.map(x=>x[0]),d:[{v:AGES.map(x=>x[1]),c:AGES.map((x,i)=>i==ai?O:A)}],t:'% sleeping under 7 hours',max:50});
+  bar('c4',{l:['Low-stress adults','High-stress adults'].concat(U?['You']:[]),d:[{v:[7.1,6.2].concat(U?[U.dur]:[]),c:[A,A].concat(U?[R]:[])}],u:' h',t:'Hours of sleep',max:10});
+  bar('c5',{l:['Sleep 8 h or more','Sleep under 8 h'].concat(U?['You']:[]),d:[{v:[4.4,5.5].concat(U?[U.str]:[]),c:[A,A].concat(U?[R]:[])}],u:'',t:'Stress (1–10)',max:10})}
+
+function stat(){
+  bar('s1',{l:['All workers','Day shift','Night shift','Night shift: health care','Night shift: transportation'],d:[{v:[30.0,28.8,44.0,52.3,69.7],c:[B,A,O,O,R]}],t:'% sleeping 6 h or less',max:80});
+  bar('s2',{l:['Less than high school','High school','Some college','College graduate'],d:[{v:[37.4,38.9,40.0,31.3],c:[A,A,A,B]}],t:'% sleeping under 7 hours',max:50});
+  bar('s3',{l:['Sluggish or lazy','Irritable','Trouble concentrating','More stressed','Sad or depressed'],d:[{n:'High stress',v:[68,59,45,45,27],c:R},{n:'Low stress',v:[36,20,12,5,2],c:B}],t:'% of adults',max:80});
+  bar('s4',{h:1,l:['All adults','Men','Women','Older men (50+)','Older women (50+)','Younger men','Younger women'],d:[{v:[42,48,36,51,44,46,27],c:[B,A,A,A,A,A,O]}],t:'% who get the sleep they need',max:60});
+  bar('s5',{l:['All adults','Women','Men','Want more sleep','Get enough sleep'],d:[{v:[49,53,45,63,31],c:[B,A,A,R,P]}],t:'% frequently feel stress',max:80});
+  bar('s6',{l:['Physical fatigue','Cognitive weariness','Emotional exhaustion'],d:[{n:'Manual labor',v:[51,41,41],c:O},{n:'Customer service, sales, entertainment',v:[53,44,40],c:R},{n:'Desk jobs',v:[38,29,25],c:B}],t:'% quite often or more',max:70});
+  bar('s7',{l:['Upper management','Individual contributors','Middle management','Front-line workers'],d:[{v:[9,18,21,26],c:[B,A,A,O]}],t:'% report a toxic workplace',max:35})}
+
+$('go').onclick=()=>{
+  const occ=$('u_occ').value.trim(),age=parseFloat($('u_age').value),dur=parseFloat($('u_dur').value),str=parseFloat($('u_s').value),night=$('u_night').checked;
+  if(!occ||isNaN(dur)||isNaN(str)){$('result').innerHTML='<p>Please type your occupation and fill in your sleep hours and stress level.</p>';return}
+  const auto=match(occ),pick=$('u_grp').value,m=pick?{grp:pick,det:(auto&&auto.grp==pick)?auto.det:null}:auto,U={occ,age,dur,str,m};personal(U);
+  const L=[];
+  L.push(dur<7?`You sleep <b>${dur} h</b>, under the 7 or more hours experts (AASM/SRS) recommend for adults.`:dur<=9?`You sleep <b>${dur} h</b>, within the 7 to 9 hours commonly recommended for adults.`:`You sleep <b>${dur} h</b>, above the usual 7 to 9 hour range.`);
+  if(m){
+    const gv=OG.find(x=>x[0]==m.grp),rank=OG.findIndex(x=>x[0]==m.grp)+1;
+    L.push(`For <b>${m.grp}</b>, ${gv[1]}% of workers sleep under 7 hours, compared with ${ALL}% of all employed adults. That ranks ${rank} of 22 major groups (1 = most short sleep).`);
+    if(m.det){const dv=OD.find(x=>x[0]==m.det);L.push(`Closest detailed group, <b>${m.det}</b>: ${dv[1]}% sleep under 7 hours.`)}
+  }else L.push(/student|retire|unemploy|homemaker|stay.at.home|military|soldier/i.test(occ)?`The CDC job data covers employed adults (active-duty military excluded), so there is no matching group for “${occ}”. Pick the closest job category above if you want a comparison.`:`We couldn’t match “${occ}” automatically. Pick the closest job category in the “Job category” box above and click Compare me again. For reference, ${ALL}% of all employed adults sleep under 7 hours.`);
+  const ai=ageIdx(age);
+  if(ai>=0)L.push(`Among employed adults aged <b>${AGES[ai][0]}</b>, ${AGES[ai][1]}% sleep under 7 hours.`);
+  L.push(`Your stress is <b>${str}/10</b>. In APA’s survey, adults who sleep under 8 hours averaged 5.5 and those who sleep 8 or more averaged 4.4. Low-stress adults averaged 7.1 h of sleep and high-stress adults 6.2 h; you reported ${dur} h.`);
+  if(night)L.push('Night-shift workers: 44.0% sleep 6 hours or less, compared with 28.8% of day-shift workers (CDC, 2010).');
+  const on=[...document.querySelectorAll('#sym input:checked')],c=g=>on.filter(x=>x.dataset.g==g).length;
+  let sy='<p>You didn’t tick any symptoms.</p>';
+  if(on.length){
+    const t=[];
+    if(c('ins')>=2)t.push('Trouble falling or staying asleep is commonly associated with <b>insomnia</b>.');
+    if(c('apn')>=2)t.push('Snoring, breathing pauses and morning headaches are commonly associated with <b>sleep apnea</b>.');
+    if(!t.length)t.push('Your symptoms are common and can have many causes, such as stress, caffeine or irregular schedules.');
+    sy=`<p>You ticked ${on.length}:</p><ul>${on.map(x=>`<li>${SYM[x.value][1]}</li>`).join('')}</ul><p>${t.join(' ')}</p>`+(c('apn')?'<p>Breathing-related symptoms are worth mentioning to a doctor.</p>':'');
+  }
+  const tps=[];
+  if(dur<7)tps.push('You are under the 7-hour mark. Try moving bedtime earlier by 15 minutes every few nights until you reach 7 hours or more.');
+  if(str>=7)tps.push('Your stress is high. Build a 30-minute wind-down before bed, such as stretching, slow breathing, or writing tomorrow’s to-do list.');
+  if(night)tps.push('For night shifts: keep your sleep time as regular as you can, use blackout curtains, and avoid caffeine late in your shift.');
+  if(c('ins'))tps.push('For trouble falling or staying asleep: keep a fixed wake time, and if you are awake for about 20 minutes, get up and do something calm in dim light.');
+  if(on.some(x=>x.value==10))tps.push('You rely on caffeine, so try stopping it by early afternoon.');
+  if(on.some(x=>x.value==6||x.value==9)&&dur>=7)tps.push('You sleep enough hours but feel sleepy or unrefreshed. If that continues, see a doctor, since breathing problems can disrupt sleep.');
+  if(m&&OG.findIndex(x=>x[0]==m.grp)<6)tps.push('Your job group is among those with higher short-sleep rates, so protect your sleep window around work hours.');
+  if(c('apn'))tps.push('Loud snoring, gasping or breathing pauses are worth mentioning to a doctor.');
+  if(!tps.length)tps.push('You’re in a good place. Keep a steady schedule, get daylight, and limit late caffeine and screens.');
+  const tp=`<div class="card" style="border:2px solid var(--acc)"><b>🌙 Tips picked for you</b><ul>${tps.map(x=>`<li>${x}</li>`).join('')}</ul><p class="mute" style="margin:0"><a href="#tips">See all eight sleep habits ↓</a></p></div>`;
+  $('result').innerHTML=`<div class="card"><b>How you compare</b><ul>${L.map(x=>`<li>${x}</li>`).join('')}</ul></div>${tp}<div class="card"><b>Your symptoms</b>${sy}<p class="mute">This is a learning tool, not a diagnosis. If symptoms last more than a few weeks or affect your daily life, talk to a doctor.</p></div>`;
+  $('result').scrollIntoView({behavior:'smooth',block:'start'})};
+personal(null);stat();
+</script>
+</body>
+</html>
